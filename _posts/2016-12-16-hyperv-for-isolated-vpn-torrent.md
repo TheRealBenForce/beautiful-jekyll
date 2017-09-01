@@ -4,14 +4,14 @@ title: Using Hyper-V for an isolated VPN torrent box
 tags: [hyper-v, torrent, vpn, dedicated, isolated]
 ---
 
-I've been searching for a long time now for the perfect VPN Torrent box and have ultimately not be satisfied with a lot of the solutions. They often fail to meet some of my requirements.
+I've been searching a long time now for the perfect VPN Torrent box and have ultimately not be satisfied with a lot of the solutions. They all  fail to meet one or more of my requirements.
 
-The most common suggested solution is using an internet kill switch with their VPN provider with no other protections. Through my testing, this was not perfect. Some traffic has managed to expose my identity before the software based kill switch detected a disconnect in my VPN. Additionally, this is really annoying to manage on a daily driver PC since I do not prefer an always on VPN for my day to day tasks.
+The most common suggested solution is using an internet kill switch from a VPN provider with no other protections. Through my testing, this was not perfect. Some traffic has managed to expose my identity before the software based kill switch detected a disconnect in my VPN. Additionally, this is really annoying to manage on a daily driver PC since I do not prefer an always on VPN for my day to day tasks.
 
-The past few days I've implemented 'a solution I've played around with in my head a bit and it seems to be working quite well. I won't walk you through step by step since my solution is a combination of many other well documented solutions, but I'll lay out my requirements for you and provide you a guideline to follow.
+The past few days I've implemented a solution I've played around with in my head a bit and it seems to be working quite well. Checkout my guide below!
 
 ### Requirements
-Before considering using my solution as your own, you'll need to consider if your requirements are the same as my own. This is a list of some of the more important requirements I had.
+Before considering using my solution as your own, you'll need to consider if your requirements are the same as mine. This is a list of some of the more important requirements I had:
 
 * Torrent network traffic and data isolated from any of my personal traffic.
 * Torrent traffic routed through VPN.
@@ -24,7 +24,7 @@ Before considering using my solution as your own, you'll need to consider if you
 
 ### Solution
 
-Windows 2012 Hyper-V VM running on my desktop. This is great because I already owned a copy from graduate school, the virtualization is free, and I'm familiar with the OS. One day I would like to convert this solution to unix since I know it will be lighter weight, but this will do for now.
+Windows 2012 Hyper-V VM running on my desktop. This is great because I already own a copy of Windows Server 2012 R2 from graduate school, the virtualization is free, and I'm familiar with the OS. One day I would like to convert this solution to unix since I know it will be lighter weight, but this will do for now.
 
 I allocate 1 core and 512 MB of RAM, and a 24GB filesystem to account for torrent space. The filesystem can be expanded if necessary. My desktop is always on. I'll typically bump up the memory to 1024 if I have any work to perform on the box.
 
@@ -43,7 +43,7 @@ This is the process I would suggest following for fewest headaches. Remember to 
 
 1. Install Hyper-V. This is free on Windows 8 and 10, but not enabled by default. I stumbled upon this by accident when I was uninstalling unrelated Windows features and that is when I had a Doc Brown moment and the vision came to me. You can follow [this guide to set it up](http://www.howtogeek.com/76532/how-to-install-or-enable-hyper-v-virtualization-in-windows-8/).
 2. Create a virtual switch in Hyper-V. Sounds complicated but its super easy. [Follow this guide](https://msdn.microsoft.com/en-us/virtualization/hyperv_on_windows/quick_start/walkthrough_virtual_switch). If you are creating a setup like mine, I made an external virtual swich.
-3. Get your OS running in Hyper-V (duh). Hopefully you have an image file for this. When I was a student, I was able to get a free copy.
+3. Get your OS running in Hyper-V (duh). Hopefully you have an image file for this. When I was a student, I was able to get a free copy from my school.
 4. Set the VM settings to auto start when the physical computer restarts.
 5. Share out a destination on your host and mount it as a drive within your VM.
 6. Install uTorrent and get it configured the way you need it. Key things to focus on:
@@ -54,14 +54,14 @@ This is the process I would suggest following for fewest headaches. Remember to 
     * Enabling remote access and testing this.
 
 7. Configure your PPTP VPN. There are lots of guides for this, but I followed [this guide](https://www.privateinternetaccess.com/pages/client-support/windows8.1-pptp) created by my VPN provider.
-8. DNS- For both my public and private networks, I set the DNS settings to use my VPN provider's as a primary and google as a backup. Prior to doing so, the default settings were using my ISP's DNS.
+8. DNS- I set the DNS settings to use my VPN provider's as a primary and google as a backup. Prior to doing so, the default settings were using my ISP's DNS.
 9. Connection testing. I use [doileak.com](http://www.doileak.com/) because it also has torrent testing. Whatever you use, you will probably need to add the site to IE Trusted Sites.
 10. Configure your health checking in scheduled tasks.
 11. Firewall rules. The hardest and most annoying part. Deserving of its own section.
 
 ### Firewall
 
-If you are not familiar with the order in which Windows will process your firewall rules, you need to get started by reading [this quick one pager](https://technet.microsoft.com/en-us/library/cc755191(v=ws.10).aspx). The bigest takeaway from this is:
+If you are not familiar with the order in which Windows will process your firewall rules, you need to get started by reading [this quick one pager](https://technet.microsoft.com/en-us/library/cc755191(v=ws.10).aspx). The biggest takeaway from this is:
 
 * Block rules. This type of rule explicitly blocks a particular type of incoming or outgoing traffic. Because these rules are evaluated before allow rules, they take precedence. Network traffic that matches both an active block and an active allow rule is blocked.
 * Allow rules. This type of rule explicitly allows a particular type of incoming or outgoing traffic.
