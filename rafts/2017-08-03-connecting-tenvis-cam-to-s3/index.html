@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+  <!-- Beautiful Jekyll | MIT license | Copyright Dean Attali 2016 -->
+  <head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+  <title>Forwarding Tenvis security camera emails to S3 (with notifications!)</title>
+
+  <meta name="author" content="Ben Force" />
+
+  
+
+  <link rel="alternate" type="application/rss+xml" title="benforce.io - Serverless blogging at its finest." href="/feed.xml" />
+
+  
+
+  
+    
+      
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.6.0/css/font-awesome.min.css" />
+
+    
+  
+
+  
+    
+      <link rel="stylesheet" href="/css/bootstrap.min.css" />
+    
+      <link rel="stylesheet" href="/css/bootstrap-social.css" />
+    
+      <link rel="stylesheet" href="/css/main.css" />
+    
+  
+
+  
+    
+      <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic" />
+    
+      <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" />
+    
+  
+
+  
+
+  
+
+  
+
+    <!-- Facebook OpenGraph tags -->
+  
+
+  
+  <meta property="og:title" content="Forwarding Tenvis security camera emails to S3 (with notifications!)" />
+  
+
+   
+  <meta property="og:description" content="So you just got that brand new security cam to keep you safe at night. But you skimped out a bit and bought the cheap Tenvis IPCam on Amazon to save a few bucks. Very soon after setup you get annoyed that the app doesn’t run in the background of...">
+  
+
+
+  <meta property="og:type" content="website" />
+
+  
+  <meta property="og:url" content="http://localhost:4000/2017-08-03-connecting-tenvis-cam-to-s3/" />
+  <link rel="canonical" href="http://localhost:4000/2017-08-03-connecting-tenvis-cam-to-s3/" />
+  
+
+  
+  <meta property="og:image" content="http://localhost:4000/img/avatar-icon.png" />
+  
+  
+
+  <!-- Twitter summary cards -->
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:site" content="@theRealBenForce" />
+  <meta name="twitter:creator" content="@theRealBenForce" />
+
+  
+  <meta name="twitter:title" content="Forwarding Tenvis security camera emails to S3 (with notifications!)" />
+  
+
+  
+  <meta name="twitter:description" content="So you just got that brand new security cam to keep you safe at night. But you skimped out a bit and bought the cheap Tenvis IPCam on Amazon to save a few bucks. Very soon after setup you get annoyed that the app doesn’t run in the background of...">
+  
+
+  
+  <meta name="twitter:image" content="http://localhost:4000/img/avatar-icon.png" />
+  
+
+</head>
+
+
+  <body>
+
+    
+
+    <nav class="navbar navbar-default navbar-fixed-top navbar-custom">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#main-navbar">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      
+        <a class="navbar-brand" href="http://localhost:4000">benforce.io</a>
+      
+    </div>
+
+    <div class="collapse navbar-collapse" id="main-navbar">
+      <ul class="nav navbar-nav navbar-right">
+      
+        
+          <li>
+            
+            
+
+
+
+
+
+<a href="/aboutme">About Me</a>
+
+          </li>
+        
+        
+        
+          <li class="navlinks-container">
+            <a class="navlinks-parent" href="javascript:void(0)">People</a>
+            <div class="navlinks-children">
+              
+                
+                  
+            
+
+
+
+
+
+<a href="http://www.frankforce.com">Frank Force</a>
+
+                
+              
+            </div>
+          </li>
+        
+        
+      </ul>
+    </div>
+
+	
+	<div class="avatar-container">
+	  <div class="avatar-img-border">
+	    <a href="http://localhost:4000 ">
+	      <img class="avatar-img" src="/img/avatar-icon.png" />
+		</a>
+	  </div>
+	</div>
+	
+
+  </div>
+</nav>
+
+
+    <!-- TODO this file has become a mess, refactor it -->
+
+
+
+
+
+<header class="header-section ">
+
+<div class="intro-header no-img">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <div class="post-heading">
+          <h1>Forwarding Tenvis security camera emails to S3 (with notifications!)</h1>
+		  
+		  
+		  
+		  <span class="post-meta">Posted on August 3, 2017</span>
+		  
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</header>
+
+
+
+
+<div class="container">
+  <div class="row">
+    <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+
+      <article role="main" class="blog-post">
+        <p>So you just got that brand new security cam to keep you safe at night. But you skimped out a bit and bought the cheap Tenvis IPCam on Amazon to save a few bucks. Very soon after setup you get annoyed that the app doesn’t run in the background of your phone and you are missing security alarms.</p>
+
+<p>You decide to use the email feature to get your notifications. You don’t trust putting a personal email in the camera software so you make a specific email account for this purpose only.</p>
+
+<p>But that’s not good enough for you. You need to complicate things and use AWS where it doesn’t need to be. Because you skimped on the camera, you can’t justify setting up an always-on FTP server for preserving video alarms.</p>
+
+<p>So what can you do for almost no money at all? In comes Amazon SES to save the day with S3 storage and SNS notifications.</p>
+
+<h2 id="cloudformation-work">Cloudformation work</h2>
+
+<p>Anything in this section can leverage <a href="https://github.com/TheRealBenForce/cam2s3">my CloudFormation template</a>.</p>
+
+<h3 id="make-an-sns-topic">Make an SNS Topic</h3>
+<p>The SNS topic subscription is what is going to make up for the lackluster notification system of the native app. This is one of the easier components and there are really only two steps:</p>
+
+<ul>
+  <li><a href="http://docs.aws.amazon.com/sns/latest/dg/CreateTopic.html">Make the topic.</a></li>
+  <li><a href="http://docs.aws.amazon.com/sns/latest/dg/SubscribeTopic.html">Subscribe to the topic as email.</a></li>
+</ul>
+
+<h3 id="make-a-bucket">Make a Bucket</h3>
+<p>Get your bucket started. Use <a href="http://docs.aws.amazon.com/AmazonS3/latest/gsg/CreatingABucket.html">this link</a> as help if you are new. Then using the details below, fill in some of the specifics:</p>
+
+<p><strong>Bucket Lifecycle -</strong> The emails don’t have much use for me. I’m mostly concerned about receiving notifications. For this reason I have a lifecycle of my bucket to delete objects in the emails folder after 30 days.<br />
+<strong>Bucket Logging -</strong> Sure, why not! Let’s put these in a logging folder.<br />
+<strong>Bucket Policy -</strong> In order for SES to write to your bucket, you will need to configure a bucket policy. In the policy below, you will need to update the resource ARN and aws:Referer.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="p">{</span><span class="w">
+    </span><span class="nt">"Version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2008-10-17"</span><span class="p">,</span><span class="w">
+    </span><span class="nt">"Statement"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+            </span><span class="nt">"Sid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"GiveSESPermissionToWriteEmail"</span><span class="p">,</span><span class="w">
+            </span><span class="nt">"Effect"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Allow"</span><span class="p">,</span><span class="w">
+            </span><span class="nt">"Principal"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                </span><span class="nt">"Service"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ses.amazonaws.com"</span><span class="w">
+            </span><span class="p">},</span><span class="w">
+            </span><span class="nt">"Action"</span><span class="p">:</span><span class="w"> </span><span class="s2">"s3:PutObject"</span><span class="p">,</span><span class="w">
+            </span><span class="nt">"Resource"</span><span class="p">:</span><span class="w"> </span><span class="s2">"arn:aws:s3:::mybucket/emails/*"</span><span class="p">,</span><span class="w">
+            </span><span class="nt">"Condition"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                </span><span class="nt">"StringEquals"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                    </span><span class="nt">"aws:Referer"</span><span class="p">:</span><span class="w"> </span><span class="s2">"###myaccountnumber###"</span><span class="w">
+                </span><span class="p">}</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+    </span><span class="p">]</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre>
+</div>
+
+<p><strong>Bucket Notification -</strong> You want to set up S3 to send a notification to the SNS topic whenever an email occurs in the bucket. This is completed in the bucket properties of the S3 console, somewhat hidden under “events”. Mine has a long crazy name because it was created in CloudFormation. I haven’t found a way around that yet.</p>
+
+<p><img src="/img/AWS/s3/camera-bucket-notification.png" alt="" /></p>
+
+<h2 id="non-cloudformation-work">Non CloudFormation work</h2>
+<p>Everything going forward can not be automated and must be done in the console or within the camera software.</p>
+
+<h3 id="verify-domain">Verify Domain</h3>
+<p>Before SES can receive emails through Amazon’s SMTP endpoint and process rules on those emails, you need to verify the ownership of the domain with Amazon. This is a pretty big process in and of itself if you registered a .io domain like me, <a href="/2017-07-26-receiving-io-certificate-validation-email\index.html">but I did write about it in my last post</a>.</p>
+
+<p>If you are registering another top level domain (ie, .com), then the process may be much quicker for you. <a href="http://docs.aws.amazon.com/ses/latest/DeveloperGuide/verify-domain-procedure.html">This is a good link</a> that should help get you started.</p>
+
+<p>Don’t try to shortcut it and verify an email address instead of a domain. SES email receiving needs an email address <em>in your verified domain</em>.</p>
+
+<h3 id="ses-email-receiving">SES Email Receiving</h3>
+<p>I discussed setting SES Email receiving in my last post. For this endeavor, we are taking it a step further by managing receiving email from a specific email address, that we will use exclusively for the camera.</p>
+
+<p><img src="/img/AWS/SES-ruleset-camera.png" alt="" /></p>
+
+<p>Be sure to put this rule at the top of your rule set. If everything has worked you should see AMAZON_SES_SETUP_NOTIFICATION email in your S3 bucket.</p>
+
+<p>You could set up SNS notifications here, but using the bucket satisfies the requirement and can be managed by CloudFormation.</p>
+
+<h3 id="get-smtp-credentials">Get SMTP Credentials</h3>
+<p>Amazon allows any email client, whether in the AWS cloud or not, to use Amazon SMTP servers for sending and receiving mail. <a href="http://docs.aws.amazon.com/ses/latest/DeveloperGuide/send-email-smtp.html">This is a good page</a> to read briefly about the capabilities. Sending through Amazon SMTP does require a user within the account with the required policy and generated SMTP credentials. The SMTP credentials are not the same as access and secret key, although they look the same.</p>
+
+<p>It seems <em>the only way</em> to generate SMTP credentials is to use the wizard. You can not create your own user, policy, and later connect SMTP credentials. If you go to the SES Console &gt; SMTP Settings &gt; Create my SMTP Credentials, a wizard will guide you through creating an IAM user with the required policy, and then generate SMTP credentials.</p>
+
+<p><img src="/img/AWS/SES/smtp-setup.png" alt="" /></p>
+
+<h3 id="test-with-powershell">Test With Powershell</h3>
+<p>This might be a good time to check to see if you can successfully send an email through the pipeline created before fiddling with the crappy camera software. You can use the PowerShell file included to run the tests. A success should show an email in your bucket. You should send to/from email addresses you have already verified.</p>
+
+<p>A failure will help you understand where the problem is. For instance an error like this indicates you are leaving your network and communicating with Amazon and that there may be a problem with your SMTP credentials.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>Exception calling "Send" with "1" argument(s): "The SMTP server requires a secure connection or the client was not authenticated. The server response was: Authentication required"
+At C:\Users\Ben\repos\Send-AmazonSmtpEmail.ps1:54 char:5
++     $SMTPClient.Send($SMTPMessage)
++     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:) [], MethodInvocationException
+    + FullyQualifiedErrorId : SmtpException
+</code></pre>
+</div>
+
+<p>An error like this is because your to/from email addresses have not been verified:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>Exception calling "Send" with "1" argument(s): "Transaction failed. The server response was: Message rejected: Email address is not verified. The following identities failed the check in region US-EAST-1: your-momma@gmail.com"
+At C:\Users\Ben\repos\Send-AmazonSmtpEmail.ps1:52 char:5
++     $SMTPClient.Send($SMTPMessage)
++     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:) [], MethodInvocationException
+    + FullyQualifiedErrorId : SmtpException
+</code></pre>
+</div>
+
+<h3 id="configure-the-camera">Configure the Camera</h3>
+<p>Getting good at working with AWS services means getting good at using their documentation. This <a href="http://docs.aws.amazon.com/ses/latest/DeveloperGuide/send-email-smtp.html">page here</a> and <a href="http://docs.aws.amazon.com/ses/latest/DeveloperGuide/smtp-connect.html">this page</a> have some good info on setting up your email client, in this case a camera.</p>
+
+<p>Once you log in to your camera web portal, you’ll need to access the administrative area where you configure email. Once there, focus on:</p>
+
+<ul>
+  <li><a href="http://docs.aws.amazon.com/ses/latest/DeveloperGuide/smtp-connect.html">An SMTP endpoint</a> closest to the camera. One of these will do the trick.</li>
+  <li>STARTTLS</li>
+  <li>Port 587. I’m on Windows 10 with a Verizon Fios Quantum Gateway router. Port 25 was not working for me and I had limited access to router logs. The camera logs were also no good. I may have gotten lucky here.</li>
+  <li>To/from email. No reason they can’t be the same.</li>
+  <li>SMTP credentials.</li>
+</ul>
+
+<p>Fill this stuff in, then click the test button and you should be in business!</p>
+
+<p><img src="/img/tech/camera-email-setup.png" alt="" /></p>
+
+      </article>
+
+      
+        <div class="blog-tags">
+          Tags:
+          
+            aws, security, camera, Tenvis, IPCam, home, diy, cloud
+          
+        </div>
+      
+
+      
+        <!-- Check if any share-links are active -->
+
+
+
+
+<section id = "social-share-section">
+  <span class="sr-only">Share: </span>
+
+  
+  <!--- Share on Twitter -->
+    <a href="https://twitter.com/intent/tweet?text=Forwarding+Tenvis+security+camera+emails+to+S3+%28with+notifications%21%29+http://localhost:4000/2017-08-03-connecting-tenvis-cam-to-s3/"
+      class="btn btn-social-icon btn-twitter" title="Share on Twitter">
+      <span class="fa fa-fw fa-twitter" aria-hidden="true"></span>
+      <span class="sr-only">Twitter</span>
+    </a>
+  
+
+  
+  <!--- Share on Facebook -->
+    <a href="https://www.facebook.com/sharer/sharer.php?u=http://localhost:4000/2017-08-03-connecting-tenvis-cam-to-s3/"
+      class="btn btn-social-icon btn-facebook" title="Share on Facebook">
+      <span class="fa fa-fw fa-facebook" aria-hidden="true"></span>
+      <span class="sr-only">Facebook</span>
+    </a>
+  
+
+  
+
+  
+  <!--- Share on LinkedIn -->
+    <a href="https://www.linkedin.com/shareArticle?mini=true&url=http://localhost:4000/2017-08-03-connecting-tenvis-cam-to-s3/"
+      class="btn btn-social-icon btn-linkedin" title="Share on LinkedIn">
+      <span class="fa fa-fw fa-linkedin" aria-hidden="true"></span>
+      <span class="sr-only">LinkedIn</span>
+    </a>
+  
+
+</section>
+
+
+
+      
+
+      <ul class="pager blog-pager">
+        
+        <li class="previous">
+          <a href="/2017-07-26-receiving-io-certificate-validation-email/" data-toggle="tooltip" data-placement="top" title="Receiving .io certificate confirmation emails with Amazon SES">&larr; Previous Post</a>
+        </li>
+        
+        
+      </ul>
+
+      
+        <div class="disqus-comments">
+          
+<div class="comments">
+	<div id="disqus_thread"></div>
+	<script type="text/javascript">
+	    var disqus_shortname = 'benforce-io';
+	    /* ensure that pages with query string get the same discussion */
+            var url_parts = window.location.href.split("?");
+            var disqus_url = url_parts[0];	    
+	    (function() {
+	        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+	        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+	        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	    })();
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+
+        </div>
+      
+    </div>
+  </div>
+</div>
+
+    <footer>
+  <div class="container beautiful-jekyll-footer">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <ul class="list-inline text-center footer-links">
+          
+          
+          <li>
+            <a href="https://github.com/theRealBenForce" title="GitHub">
+              <span class="fa-stack fa-lg" aria-hidden="true">
+                <i class="fa fa-circle fa-stack-2x"></i>
+                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+              </span>
+              <span class="sr-only">GitHub</span>
+            </a>
+          </li>
+          
+		  
+          <li>
+            <a href="https://twitter.com/theRealBenForce" title="Twitter">
+              <span class="fa-stack fa-lg" aria-hidden="true">
+                <i class="fa fa-circle fa-stack-2x"></i>
+                <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+              </span>
+              <span class="sr-only">Twitter</span>
+            </a>
+          </li>
+          
+	  
+      
+		  
+          <li>
+            <a href="mailto:theRealBenForce@gmail.com" title="Email me">
+              <span class="fa-stack fa-lg" aria-hidden="true">
+                <i class="fa fa-circle fa-stack-2x"></i>
+                <i class="fa fa-envelope fa-stack-1x fa-inverse"></i>
+              </span>
+              <span class="sr-only">Email me</span>
+            </a>
+          </li>
+          
+		  
+          <li>
+            <a href="https://linkedin.com/in/theRealBenForce" title="LinkedIn">
+              <span class="fa-stack fa-lg" aria-hidden="true">
+                <i class="fa fa-circle fa-stack-2x"></i>
+                <i class="fa fa-linkedin fa-stack-1x fa-inverse"></i>
+              </span>
+              <span class="sr-only">LinkedIn</span>
+            </a>
+          </li>
+          
+		  
+		  
+      
+      
+      
+          <li>
+            <a href="https://www.youtube.com/Bendezium" title="YouTube">
+              <span class="fa-stack fa-lg" aria-hidden="true">
+                <i class="fa fa-circle fa-stack-2x"></i>
+                <i class="fa fa-youtube fa-stack-1x fa-inverse"></i>
+              </span>
+              <span class="sr-only">YouTube</span>
+            </a>
+          </li>
+          
+      
+      
+		  
+          <li>
+            <a href="/feed.xml" title="RSS">
+              <span class="fa-stack fa-lg" aria-hidden="true">
+                <i class="fa fa-circle fa-stack-2x"></i>
+                <i class="fa fa-rss fa-stack-1x fa-inverse"></i>
+              </span>
+              <span class="sr-only">RSS</span>
+            </a>
+          </li>
+          
+      
+          <li>
+            <a href="https://steamcommunity.com/id/Bendezium" title="Steam">
+              <span class="fa-stack fa-lg" aria-hidden="true">
+                <i class="fa fa-circle fa-stack-2x"></i>
+                <i class="fa fa-steam fa-stack-1x fa-inverse"></i>
+              </span>
+              <span class="sr-only">Steam</span>
+            </a>
+          </li>
+          
+      
+      
+          <li>
+            <a href="https://theRealBenForce.yelp.com" title="Yelp">
+              <span class="fa-stack fa-lg" aria-hidden="true">
+                <i class="fa fa-circle fa-stack-2x"></i>
+                <i class="fa fa-yelp fa-stack-1x fa-inverse"></i>
+              </span>
+              <span class="sr-only">Yelp</span>
+            </a>
+          </li>
+          
+        </ul>
+        <p class="copyright text-muted">
+		  Ben Force
+		  &nbsp;&bull;&nbsp;
+		  2017
+
+		  
+		  &nbsp;&bull;&nbsp;
+		  <a href="http://localhost:4000">benforce.io</a>
+		  
+	    </p>
+	        <!-- Please don't remove this, keep my open source work credited :) -->
+		<p class="theme-by text-muted">
+		  Theme by
+		  <a href="http://deanattali.com/beautiful-jekyll/">beautiful-jekyll</a>
+		</p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+
+    
+
+
+
+
+
+
+  
+    <!-- doing something a bit funky here because I want to be careful not to include JQuery twice! -->
+    
+      <script>
+      	if (typeof jQuery == 'undefined') {
+      	  document.write('<script src="/js/jquery-1.11.2.min.js"></scr' + 'ipt>');
+      	}
+      </script>
+    
+  
+    <!-- doing something a bit funky here because I want to be careful not to include JQuery twice! -->
+    
+	<script src="/js/bootstrap.min.js"></script>
+    
+  
+    <!-- doing something a bit funky here because I want to be careful not to include JQuery twice! -->
+    
+	<script src="/js/main.js"></script>
+    
+  
+
+
+
+
+
+  </body>
+</html>

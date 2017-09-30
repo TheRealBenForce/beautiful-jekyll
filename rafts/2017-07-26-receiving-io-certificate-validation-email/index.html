@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+  <!-- Beautiful Jekyll | MIT license | Copyright Dean Attali 2016 -->
+  <head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+  <title>Receiving .io certificate confirmation emails with Amazon SES</title>
+
+  <meta name="author" content="Ben Force" />
+
+  
+
+  <link rel="alternate" type="application/rss+xml" title="benforce.io - Serverless blogging at its finest." href="/feed.xml" />
+
+  
+
+  
+    
+      
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.6.0/css/font-awesome.min.css" />
+
+    
+  
+
+  
+    
+      <link rel="stylesheet" href="/css/bootstrap.min.css" />
+    
+      <link rel="stylesheet" href="/css/bootstrap-social.css" />
+    
+      <link rel="stylesheet" href="/css/main.css" />
+    
+  
+
+  
+    
+      <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic" />
+    
+      <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" />
+    
+  
+
+  
+
+  
+
+  
+
+    <!-- Facebook OpenGraph tags -->
+  
+
+  
+  <meta property="og:title" content="Receiving .io certificate confirmation emails with Amazon SES" />
+  
+
+   
+  <meta property="og:description" content="So you just registered one of those super trendy .io domains that all the cool kids have these days. You’re a boss because you paid $40 instead of $13 for the .com you wanted but was already taken. Now its time to set up your static site in S3 on...">
+  
+
+
+  <meta property="og:type" content="website" />
+
+  
+  <meta property="og:url" content="http://localhost:4000/2017-07-26-receiving-io-certificate-validation-email/" />
+  <link rel="canonical" href="http://localhost:4000/2017-07-26-receiving-io-certificate-validation-email/" />
+  
+
+  
+  <meta property="og:image" content="http://localhost:4000/img/avatar-icon.png" />
+  
+  
+
+  <!-- Twitter summary cards -->
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:site" content="@theRealBenForce" />
+  <meta name="twitter:creator" content="@theRealBenForce" />
+
+  
+  <meta name="twitter:title" content="Receiving .io certificate confirmation emails with Amazon SES" />
+  
+
+  
+  <meta name="twitter:description" content="So you just registered one of those super trendy .io domains that all the cool kids have these days. You’re a boss because you paid $40 instead of $13 for the .com you wanted but was already taken. Now its time to set up your static site in S3 on...">
+  
+
+  
+  <meta name="twitter:image" content="http://localhost:4000/img/avatar-icon.png" />
+  
+
+</head>
+
+
+  <body>
+
+    
+
+    <nav class="navbar navbar-default navbar-fixed-top navbar-custom">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#main-navbar">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      
+        <a class="navbar-brand" href="http://localhost:4000">benforce.io</a>
+      
+    </div>
+
+    <div class="collapse navbar-collapse" id="main-navbar">
+      <ul class="nav navbar-nav navbar-right">
+      
+        
+          <li>
+            
+            
+
+
+
+
+
+<a href="/aboutme">About Me</a>
+
+          </li>
+        
+        
+        
+          <li class="navlinks-container">
+            <a class="navlinks-parent" href="javascript:void(0)">People</a>
+            <div class="navlinks-children">
+              
+                
+                  
+            
+
+
+
+
+
+<a href="http://www.frankforce.com">Frank Force</a>
+
+                
+              
+            </div>
+          </li>
+        
+        
+      </ul>
+    </div>
+
+	
+	<div class="avatar-container">
+	  <div class="avatar-img-border">
+	    <a href="http://localhost:4000 ">
+	      <img class="avatar-img" src="/img/avatar-icon.png" />
+		</a>
+	  </div>
+	</div>
+	
+
+  </div>
+</nav>
+
+
+    <!-- TODO this file has become a mess, refactor it -->
+
+
+
+
+
+<header class="header-section ">
+
+<div class="intro-header no-img">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <div class="post-heading">
+          <h1>Receiving .io certificate confirmation emails with Amazon SES</h1>
+		  
+		  
+		  
+		  <span class="post-meta">Posted on July 26, 2017</span>
+		  
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</header>
+
+
+
+
+<div class="container">
+  <div class="row">
+    <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+
+      <article role="main" class="blog-post">
+        <p>So you just registered one of those super trendy .io domains that all the cool kids have these days. You’re a boss because you paid $40 instead of $13 for the .com you wanted but was already taken. Now its time to set up your static site in S3 on the cheap, but that is not enough for you. You need more. You must conquer the world. So you distribute your site with CloudFront. But still… you need more. You must mark your territory with a seal of approval, an SSL certificate.</p>
+
+<p>You set up a certificate with Amazon Certificate Manager and wait for your confirmation email proving you own the domain. And you wait. And wait a little longer. And then you realize, that email is never going to come. But why? Well that’s because the Registrant, Administrative, and Technical contact you set up when you registered your domain are not returned by a WHOIS lookup for .io domains.</p>
+
+<p>Basically, Amazon does not know how to reach you to validate you own the domain (even though you likely registered it through Route53). Fortunately, amazon also sends a verification email to the following addresses:</p>
+
+<ul>
+  <li>administrator@your_domain_name</li>
+  <li>hostmaster@your_domain_name</li>
+  <li>postmaster@your_domain_name</li>
+  <li>webmaster@your_domain_name</li>
+  <li>admin@your_domain_name</li>
+</ul>
+
+<p>No problemo! We are going to take advantage of that! This is where Amazon SES comes in handy and I’m going to walk you through it.</p>
+
+<h3 id="verify-domain">Verify Domain</h3>
+<p>First you are going to want to verify your ownership of the domain. Go to Amazon SES &gt; Domains &gt; Verify Domain &gt; Provide .io domain &gt; And you should see something like this:</p>
+
+<p><img src="/img/AWS/verify-new-domain.png" alt="" /></p>
+
+<p>You need to add a TXT record and an MX record. Click the “Use Route 53” button to take care of this for you. Ignore anything about outgoing or sending email.</p>
+
+<ul>
+  <li>A TXT record is commonly used in verifying domain ownership.</li>
+  <li>An MX record is specifies the mail server responsible to accept mail to your domain.</li>
+</ul>
+
+<p>You will see a pending verification screen like this for a few minutes before your domain becomes verified.</p>
+
+<p><img src="/img/AWS/domain-registration-pending-verification.png" alt="" /></p>
+
+<h3 id="setup-an-s3-bucket">Setup an S3 bucket</h3>
+<p>If you’ve made it this far, you likely know how to setup a bucket so I’m not going to take you through the step by step. But its important to know you do need to add a bucket policy that will allow SES to write to it. Personally, I use an ‘emails’ folder in my logging bucket for my main site. Your policy would look something like this:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="p">{</span><span class="w">
+    </span><span class="nt">"Version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2008-10-17"</span><span class="p">,</span><span class="w">
+    </span><span class="nt">"Statement"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+            </span><span class="nt">"Sid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"GiveSESPermissionToWriteEmail"</span><span class="p">,</span><span class="w">
+            </span><span class="nt">"Effect"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Allow"</span><span class="p">,</span><span class="w">
+            </span><span class="nt">"Principal"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                </span><span class="nt">"Service"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ses.amazonaws.com"</span><span class="w">
+            </span><span class="p">},</span><span class="w">
+            </span><span class="nt">"Action"</span><span class="p">:</span><span class="w"> </span><span class="s2">"s3:PutObject"</span><span class="p">,</span><span class="w">
+            </span><span class="nt">"Resource"</span><span class="p">:</span><span class="w"> </span><span class="s2">"arn:aws:s3:::my-awesome-bucket/emails/*"</span><span class="p">,</span><span class="w">
+            </span><span class="nt">"Condition"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                </span><span class="nt">"StringEquals"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                    </span><span class="nt">"aws:Referer"</span><span class="p">:</span><span class="w"> </span><span class="s2">"###myAccountNumber###"</span><span class="w">
+                </span><span class="p">}</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+    </span><span class="p">]</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre>
+</div>
+
+<h3 id="set-up-ses-for-receiving-email">Set up SES for receiving email</h3>
+<p>Again from the SES console page go to Amazon SES &gt; Email Receiving &gt; Rule Sets
+&gt; Create Rule Set &gt; Provide a name &gt; Create a Rule Set.</p>
+
+<p>Once you’ve created a rule set, you still need to set rules and activate it.
+Select your rule from the inactive rule sets and edit it:</p>
+
+<p><img src="/img/AWS/ses-ruleset.png" alt="" /></p>
+
+<p>Go ahead and create a rule for your ruleset. I only added one rule.
+In your rule, you’ll need to:</p>
+
+<ul>
+  <li>Enable the rule.</li>
+  <li>Add your S3 bucket.</li>
+  <li>Specify the recipient. Amazon will send email to the 5 addresses, but
+you really only need one. Optional.</li>
+  <li>S3 prefix. Optional.</li>
+</ul>
+
+<h3 id="generate-certificate">Generate certificate</h3>
+<p>Next, you’ll need to jump on over to Certificate Manager and request a new certificate. Fill out your domain information like so. You can add optional additional subdomains if desired. Submit your request.</p>
+
+<p><img src="/img/AWS/certificate-manager-add-domain-names.png" alt="" /></p>
+
+<h3 id="certificate-validation-email">Certificate validation email</h3>
+<p>This is where the magic happens! Emails to our mystical 5 addresses should be sent curtesy of Amazon almost immediately. Jump to your S3 bucket and you should see some crazy files in there. Download one and open it with a text editor.  There will be a link inside that will looks something like:
+https://us-east-1.certificates.amazon.com/approvals</p>
+
+<p>Open up that link, click the approve button and are golden!</p>
+
+<h3 id="helpful-documentation">Helpful Documentation:</h3>
+<p><a href="http://docs.aws.amazon.com/acm/latest/userguide/gs-acm-validate.html">Validate Domain Ownership</a></p>
+
+      </article>
+
+      
+        <div class="blog-tags">
+          Tags:
+          
+            aws
+          
+        </div>
+      
+
+      
+        <!-- Check if any share-links are active -->
+
+
+
+
+<section id = "social-share-section">
+  <span class="sr-only">Share: </span>
+
+  
+  <!--- Share on Twitter -->
+    <a href="https://twitter.com/intent/tweet?text=Receiving+.io+certificate+confirmation+emails+with+Amazon+SES+http://localhost:4000/2017-07-26-receiving-io-certificate-validation-email/"
+      class="btn btn-social-icon btn-twitter" title="Share on Twitter">
+      <span class="fa fa-fw fa-twitter" aria-hidden="true"></span>
+      <span class="sr-only">Twitter</span>
+    </a>
+  
+
+  
+  <!--- Share on Facebook -->
+    <a href="https://www.facebook.com/sharer/sharer.php?u=http://localhost:4000/2017-07-26-receiving-io-certificate-validation-email/"
+      class="btn btn-social-icon btn-facebook" title="Share on Facebook">
+      <span class="fa fa-fw fa-facebook" aria-hidden="true"></span>
+      <span class="sr-only">Facebook</span>
+    </a>
+  
+
+  
+
+  
+  <!--- Share on LinkedIn -->
+    <a href="https://www.linkedin.com/shareArticle?mini=true&url=http://localhost:4000/2017-07-26-receiving-io-certificate-validation-email/"
+      class="btn btn-social-icon btn-linkedin" title="Share on LinkedIn">
+      <span class="fa fa-fw fa-linkedin" aria-hidden="true"></span>
+      <span class="sr-only">LinkedIn</span>
+    </a>
+  
+
+</section>
+
+
+
+      
+
+      <ul class="pager blog-pager">
+        
+        <li class="previous">
+          <a href="/2016-12-16-hyperv-for-isolated-vpn-torrent/" data-toggle="tooltip" data-placement="top" title="Using Hyper-V for an isolated VPN torrent box">&larr; Previous Post</a>
+        </li>
+        
+        
+        <li class="next">
+          <a href="/2017-08-03-connecting-tenvis-cam-to-s3/" data-toggle="tooltip" data-placement="top" title="Forwarding Tenvis security camera emails to S3 (with notifications!)">Next Post &rarr;</a>
+        </li>
+        
+      </ul>
+
+      
+        <div class="disqus-comments">
+          
+<div class="comments">
+	<div id="disqus_thread"></div>
+	<script type="text/javascript">
+	    var disqus_shortname = 'benforce-io';
+	    /* ensure that pages with query string get the same discussion */
+            var url_parts = window.location.href.split("?");
+            var disqus_url = url_parts[0];	    
+	    (function() {
+	        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+	        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+	        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	    })();
+	</script>
+	<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+
+        </div>
+      
+    </div>
+  </div>
+</div>
+
+    <footer>
+  <div class="container beautiful-jekyll-footer">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <ul class="list-inline text-center footer-links">
+          
+          
+          <li>
+            <a href="https://github.com/theRealBenForce" title="GitHub">
+              <span class="fa-stack fa-lg" aria-hidden="true">
+                <i class="fa fa-circle fa-stack-2x"></i>
+                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+              </span>
+              <span class="sr-only">GitHub</span>
+            </a>
+          </li>
+          
+		  
+          <li>
+            <a href="https://twitter.com/theRealBenForce" title="Twitter">
+              <span class="fa-stack fa-lg" aria-hidden="true">
+                <i class="fa fa-circle fa-stack-2x"></i>
+                <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+              </span>
+              <span class="sr-only">Twitter</span>
+            </a>
+          </li>
+          
+	  
+      
+		  
+          <li>
+            <a href="mailto:theRealBenForce@gmail.com" title="Email me">
+              <span class="fa-stack fa-lg" aria-hidden="true">
+                <i class="fa fa-circle fa-stack-2x"></i>
+                <i class="fa fa-envelope fa-stack-1x fa-inverse"></i>
+              </span>
+              <span class="sr-only">Email me</span>
+            </a>
+          </li>
+          
+		  
+          <li>
+            <a href="https://linkedin.com/in/theRealBenForce" title="LinkedIn">
+              <span class="fa-stack fa-lg" aria-hidden="true">
+                <i class="fa fa-circle fa-stack-2x"></i>
+                <i class="fa fa-linkedin fa-stack-1x fa-inverse"></i>
+              </span>
+              <span class="sr-only">LinkedIn</span>
+            </a>
+          </li>
+          
+		  
+		  
+      
+      
+      
+          <li>
+            <a href="https://www.youtube.com/Bendezium" title="YouTube">
+              <span class="fa-stack fa-lg" aria-hidden="true">
+                <i class="fa fa-circle fa-stack-2x"></i>
+                <i class="fa fa-youtube fa-stack-1x fa-inverse"></i>
+              </span>
+              <span class="sr-only">YouTube</span>
+            </a>
+          </li>
+          
+      
+      
+		  
+          <li>
+            <a href="/feed.xml" title="RSS">
+              <span class="fa-stack fa-lg" aria-hidden="true">
+                <i class="fa fa-circle fa-stack-2x"></i>
+                <i class="fa fa-rss fa-stack-1x fa-inverse"></i>
+              </span>
+              <span class="sr-only">RSS</span>
+            </a>
+          </li>
+          
+      
+          <li>
+            <a href="https://steamcommunity.com/id/Bendezium" title="Steam">
+              <span class="fa-stack fa-lg" aria-hidden="true">
+                <i class="fa fa-circle fa-stack-2x"></i>
+                <i class="fa fa-steam fa-stack-1x fa-inverse"></i>
+              </span>
+              <span class="sr-only">Steam</span>
+            </a>
+          </li>
+          
+      
+      
+          <li>
+            <a href="https://theRealBenForce.yelp.com" title="Yelp">
+              <span class="fa-stack fa-lg" aria-hidden="true">
+                <i class="fa fa-circle fa-stack-2x"></i>
+                <i class="fa fa-yelp fa-stack-1x fa-inverse"></i>
+              </span>
+              <span class="sr-only">Yelp</span>
+            </a>
+          </li>
+          
+        </ul>
+        <p class="copyright text-muted">
+		  Ben Force
+		  &nbsp;&bull;&nbsp;
+		  2017
+
+		  
+		  &nbsp;&bull;&nbsp;
+		  <a href="http://localhost:4000">benforce.io</a>
+		  
+	    </p>
+	        <!-- Please don't remove this, keep my open source work credited :) -->
+		<p class="theme-by text-muted">
+		  Theme by
+		  <a href="http://deanattali.com/beautiful-jekyll/">beautiful-jekyll</a>
+		</p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+
+    
+
+
+
+
+
+
+  
+    <!-- doing something a bit funky here because I want to be careful not to include JQuery twice! -->
+    
+      <script>
+      	if (typeof jQuery == 'undefined') {
+      	  document.write('<script src="/js/jquery-1.11.2.min.js"></scr' + 'ipt>');
+      	}
+      </script>
+    
+  
+    <!-- doing something a bit funky here because I want to be careful not to include JQuery twice! -->
+    
+	<script src="/js/bootstrap.min.js"></script>
+    
+  
+    <!-- doing something a bit funky here because I want to be careful not to include JQuery twice! -->
+    
+	<script src="/js/main.js"></script>
+    
+  
+
+
+
+
+
+  </body>
+</html>
