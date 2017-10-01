@@ -63,7 +63,7 @@ So it seems impossible to use an aws-specific parameter in this case. Back to go
 }
 ```
 
-![](\img\AWS\Cloudformation\invalid-param-name1.png)
+![](\img\AWS\cloudformation\invalid-param-name1.png)
 
 ### An invalid aws-specific type parameter
 
@@ -104,10 +104,10 @@ Now [here is a second example Cloudformation template](\files\aws-specific-param
 }
 ```
 
-![](\img\AWS\Cloudformation\invalid-param-name2.png)
+![](\img\AWS\cloudformation\invalid-param-name2.png)
 
 ### A little bonus!
 
 Another reason to use AWS-specific parameters is because it bypasses the need to use the "AllowedValues" property of a parameter and input your resources manually. Here are my hostedzones demonstrated:
 
-![](\img\AWS\Cloudformation\invalid-param-name3.png)
+![](\img\AWS\cloudformation\invalid-param-name3.png)
