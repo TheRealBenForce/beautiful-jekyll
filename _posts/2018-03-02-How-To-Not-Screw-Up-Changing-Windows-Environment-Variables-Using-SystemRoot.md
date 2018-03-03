@@ -1,5 +1,6 @@
 ---
 layout: post
+title: Windows Environment Variables Using %SystemRoot%
 tags: [sysadmin, powershell, windows, path, environment variables]
 ---
 
