@@ -4,8 +4,6 @@ title: Windows environment variables using %SystemRoot%
 tags: [sysadmin, powershell, windows, path, environment variables]
 ---
 
-### Overview of my issue
-
 This past week I was working an issue where a specific agent in our stack software was failing some commands on a group of Windows 2012 R2 servers. It seemed like there was a "Google Gap", as I call it. I couldn't find any recent information really describing my problem, so I've been inspired to write this blog post on my issue and resolution.
 
 All the servers experiencing the issue were test EC2 instances built from the same codebase for the same application. I figured, "find the problem in the code base and it will solve the issue for all servers". First, I opened a case with our vendor to get some assistance and was informed the agent was failing to execute the wmic command. [WMIC](https://technet.microsoft.com/en-us/library/cc181088.aspx) is a command line tool that provides access to a lot of Windows management functions.
