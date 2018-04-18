@@ -1,6 +1,6 @@
 # This buildspec.yml can be built with aws/codebuild/ruby:2.3.1
 version: 0.1
-   
+
 phases:
   install:
     commands:
@@ -15,4 +15,4 @@ phases:
       - bundle exec jekyll build
       - echo "******** Updating your jekyll website at s3 bucket ********"
       - echo "$TARGET_S3_BUCKET"
-      - aws s3 sync _site/ $TARGET_S3_BUCKET
+      - aws s3 sync _site/ $TARGET_S3_BUCKET --exclude buildspec.yml
