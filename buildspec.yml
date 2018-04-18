@@ -1,0 +1,18 @@
+# This buildspec.yml can be built with aws/codebuild/ruby:2.3.1
+version: 0.1
+   
+phases:
+  install:
+    commands:
+      # Add / remove whatever jekyll plugins you use here
+      - gem install jekyll jekyll-watch jekyll-paginate jekyll-sitemap jekyll-gist jekyll-sass-converter bundler
+  build:
+    commands:
+      - echo "******** Building your jekyll website ********"
+      - jekyll build
+      - ls
+      - bundle install
+      - bundle exec jekyll build
+      - echo "******** Updating your jekyll website at s3 bucket ********"
+      - echo "$TARGET_S3_BUCKET"
+      - aws s3 sync _site/ $TARGET_S3_BUCKET
