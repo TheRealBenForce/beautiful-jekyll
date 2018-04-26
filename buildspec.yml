@@ -4,15 +4,27 @@ version: 0.1
 phases:
   install:
     commands:
-      # Add / remove whatever jekyll plugins you use here
-      - echo "******** Installing gems ********"
+      - echo "Installing bundler"
       - gem install bundler
       - bundle install
   build:
     commands:
-      - echo "******** Building site ********"
-      - ls
-      - bundle exec jekyll build
-      - echo "******** Updating your jekyll website at s3 bucket ********"
-      - echo "$TARGET_S3_BUCKET"
-      - aws s3 sync _site/ $TARGET_S3_BUCKET --exclude buildspec.yml
+      - BUILD_STAGING_STATE=aws codepipeline get-pipeline-state --name $PIPELINE_NAME --profile CoderRead --region us-east-1 --query stageStates[0].actionStates[0].latestExecution.status
+      - BUILD_PROD_STATE==aws codepipeline get-pipeline-state --name $PIPELINE_NAME --profile CoderRead --region us-east-1 --query stageStates[2].actionStates[0].latestExecution.status
+      - |
+        if [$BUILD_STAGING_STATE = "InProgress"]; then
+          echo "Build site and pushing to $TARGET_S3_BUCKET"
+          bundle exec jekyll build
+          aws s3 sync _site/ $TARGET_S3_BUCKET --exclude buildspec.yml
+          BUILDMSG="Copy to staging complete."
+        if [$BUILD_PROD_STATE = "InProgress"]; then
+          echo "Approval received"
+          aws s3 staging.$TARGET_S3_BUCKET $TARGET_S3_BUCKET
+          BUILDMSG="Copy to production complete"
+        else
+          echo "Unknown error."
+          BUILDMSG="Unknown error."
+        fi
+    post_build:
+      commands:
+        - echo "*** Add SNS Notification here ***"
