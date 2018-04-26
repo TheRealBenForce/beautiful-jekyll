@@ -4,8 +4,7 @@ version: 0.1
 phases:
   install:
     commands:
-      - echo "Installing bundler"
-      - gem install bundler
+      - echo "Installing gems with bundler"
       - bundle install
   build:
     commands:
