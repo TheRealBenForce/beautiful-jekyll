@@ -13,7 +13,7 @@ phases:
       - echo "Build Stage $BUILD_STAGE start"
       - |
         if ["$BUILD_STAGE" = "Staging"]; then
-          echo "Build site and pushing to $STAGING_S3_BUCKET
+          echo "Build site and pushing to $STAGING_S3_BUCKET"
           bundle exec jekyll build
           aws s3 sync _site/ $STAGING_S3_BUCKET --exclude buildspec.yml
           BUILDMSG="Copy to staging complete."
@@ -26,7 +26,7 @@ phases:
           echo "Unknown error."
           BUILDMSG="Unknown error."
         fi
-      - echo "Build Stage "$BUILD_STAGE" complete"
+      - echo "Build Stage $BUILD_STAGE complete"
     post_build:
       commands:
         - echo "*** Add SNS Notification here ***"
