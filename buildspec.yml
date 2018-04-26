@@ -10,14 +10,14 @@ phases:
   build:
     commands:
       - printenv
-      - echo "Build Stage "$BUILD_STAGE" start"
+      - echo "Build Stage $BUILD_STAGE start"
       - |
         if ["$BUILD_STAGE" = "Staging"]; then
-          echo "Build site and pushing to $TARGET_S3_BUCKET"
+          echo "Build site and pushing to $STAGING_S3_BUCKET
           bundle exec jekyll build
           aws s3 sync _site/ $STAGING_S3_BUCKET --exclude buildspec.yml
           BUILDMSG="Copy to staging complete."
-        if ["$BUILD_STAGE" = "Production"]; then
+        elif ["$BUILD_STAGE" = "Production"]; then
           echo "Approval received"
           aws s3 sync _site/ $PRODUCTIONG_S3_BUCKET --exclude buildspec.yml
           aws s3 rm s3://$STAGING_S3_BUCKET --recursive --exclude error.html
