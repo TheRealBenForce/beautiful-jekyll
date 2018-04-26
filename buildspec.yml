@@ -19,7 +19,7 @@ phases:
         elif ["$BUILD_STAGE" = "Production"]; then
           echo "Approval received"
           aws s3 sync _site/ $PROD_S3_BUCKET --exclude buildspec.yml
-          aws s3 rm s3://$STAGING_S3_BUCKET --recursive --exclude error.html
+          aws s3 rm $STAGING_S3_BUCKET --recursive --exclude error.html
           BUILDMSG="Copy to production complete"
         else
           echo "Unknown error."
