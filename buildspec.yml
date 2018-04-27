@@ -20,7 +20,7 @@ phases:
           bundle exec jekyll build
           aws s3 sync _site/ $STAGING_S3_BUCKET --exclude buildspec.yml
           BUILDMSG="Copy to staging complete."
-        if test "$BUILD_STAGE" = 'PRODUCTION'; then
+        elif test "$BUILD_STAGE" = 'PRODUCTION'; then
           echo "Approval received"
           aws s3 sync $STAGING_S3_BUCKET $PROD_S3_BUCKET --exclude buildspec.yml
           aws s3 rm $STAGING_S3_BUCKET --recursive --exclude error.html
