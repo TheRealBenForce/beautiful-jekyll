@@ -5,6 +5,7 @@ phases:
   install:
     commands:
       - |
+        #!/bin/bash
         if [ "${BUILD_STAGE}" == "Staging" ]; then
           echo "Installing gems with bundler"
           bundle install;
@@ -16,6 +17,7 @@ phases:
 
       - echo "Build Stage $BUILD_STAGE start"
       - |
+        #!/bin/bash
         if [ "${BUILD_STAGE}" == "Staging" ]; then
           echo "Build site and pushing to $STAGING_S3_BUCKET"
           bundle exec jekyll build
