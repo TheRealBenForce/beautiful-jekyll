@@ -4,8 +4,7 @@ version: 0.1
 phases:
   install:
     commands:
-      - |
-        if [ "$BUILD_STAGE" == "Staging" ]; then
+      - if [ "$BUILD_STAGE" == "Staging" ]; then
           echo "Installing gems with bundler"
           bundle install
         else
@@ -15,8 +14,7 @@ phases:
     commands:
       - printenv
       - echo "Build Stage $BUILD_STAGE start"
-      - |
-        if [ "$BUILD_STAGE" == "Staging" ]; then
+      - if [ "$BUILD_STAGE" == "Staging" ]; then
           echo "Build site and pushing to $STAGING_S3_BUCKET"
           bundle exec jekyll build
           aws s3 sync _site/ $STAGING_S3_BUCKET --exclude buildspec.yml
