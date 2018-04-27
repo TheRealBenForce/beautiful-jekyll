@@ -5,34 +5,28 @@ phases:
   install:
     commands:
       - |
-        #!/bin/bash
-        if [ "${BUILD_STAGE}" == "Staging" ]; then
+        if test "${BUILD_STAGE}" = 'STAGING'; then
           echo "Installing gems with bundler"
-          bundle install;
+          bundle install
         else
-          echo "Nothing to install. Moving to build stage";
+          echo "Nothing to install. Moving to build stage"
         fi
   build:
     commands:
-
       - echo "Build Stage $BUILD_STAGE start"
       - |
-        #!/bin/bash
-        if [ "${BUILD_STAGE}" == "Staging" ]; then
+        if test "${BUILD_STAGE}" = 'STAGING'; then
           echo "Build site and pushing to $STAGING_S3_BUCKET"
           bundle exec jekyll build
           aws s3 sync _site/ $STAGING_S3_BUCKET --exclude buildspec.yml
-          BUILDMSG="Copy to staging complete.";
-        elif [ "${BUILD_STAGE}" == "Production" ]; then
+          BUILDMSG="Copy to staging complete."
+        if test "${BUILD_STAGE}" = 'PRODUCTION'; then
           echo "Approval received"
           aws s3 sync $STAGING_S3_BUCKET $PROD_S3_BUCKET --exclude buildspec.yml
           aws s3 rm $STAGING_S3_BUCKET --recursive --exclude error.html
-          BUILDMSG="Copy to production complete";
+          BUILDMSG="Copy to production complete"
         else
           echo "Unknown error."
-          BUILDMSG="Unknown error.";
+          BUILDMSG="Unknown error."
         fi
       - echo "Build Stage $BUILD_STAGE complete"
-    post_build:
-      commands:
-        - echo "*** Add SNS Notification here ***"
