@@ -9,7 +9,8 @@ phases:
           echo "Installing gems with bundler"
           bundle install
         else
-          echo "Nothing install. Moving to build stage"
+          echo "Nothing to install. Moving to build stage"
+        fi
   build:
     commands:
       - printenv
