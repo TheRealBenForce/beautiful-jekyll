@@ -14,7 +14,7 @@ baseurl: ""
 # Of course don't forget to change the username and projectname to YOUR username and project
 
 # Name of website
-title: benforce.io
+title: Ben Force
 
 # Short description of your site
 description: Serverless blogging at its finest.
@@ -97,7 +97,7 @@ url-pretty: "benforce.io"  # eg. "deanattali.com/beautiful-jekyll"
 disqus: "benforce-io"
 
 # Fill in your Google Analytics ID to track your website using GA
-#google_analytics: ""
+google_analytics: "UA-115059179-1"
 
 # Google Tag Manager ID
 #gtm: ""
@@ -156,6 +156,7 @@ exclude:
   - README.md
   - Vagrantfile
   - s3_website.yml
+  - buildscript.yml
 
 # prose.io config
 prose:
