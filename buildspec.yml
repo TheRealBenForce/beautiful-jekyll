@@ -18,6 +18,8 @@ phases:
         if test "$BUILD_STAGE" = 'STAGING'; then
           echo "Build site and pushing to $STAGING_S3_BUCKET"
           bundle exec jekyll build
+          aws s3 rm $STAGING_S3_BUCKET --recursive --exclude error.html
+          aws cloudfront create-invalidation --distribution-id $STAGING_DISTRIBUTION --paths /* --region REGION
           aws s3 sync _site/ $STAGING_S3_BUCKET --exclude buildspec.yml
           BUILDMSG="Copy to staging complete."
         elif test "$BUILD_STAGE" = 'PRODUCTION'; then
