@@ -24,6 +24,8 @@ phases:
           echo "Approval received"
           aws s3 sync $STAGING_S3_BUCKET $PROD_S3_BUCKET --exclude buildspec.yml
           aws s3 rm $STAGING_S3_BUCKET --recursive --exclude error.html
+          aws cloudfront create-invalidation --distribution-id $STAGING_DISTRIBUTION --paths /* --region REGION
+          aws cloudfront create-invalidation --distribution-id $PROD_DISTRIBUTION --paths /* --region REGION
           BUILDMSG="Copy to production complete"
         else
           echo "Unknown error."
