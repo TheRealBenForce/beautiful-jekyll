@@ -24,6 +24,7 @@ description: Serverless blogging at its finest.
 # List of links in the navigation bar
 navbar-links:
   About Me: "aboutme"
+  AWS Wish List: "aws-wish-list"
   People:
     - Frank Force: "http://www.frankforce.com"
 
