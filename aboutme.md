@@ -7,9 +7,9 @@ Hi, my name is Ben Force. That is my real name. I like nerdy things such
 as video games, cloud computing, and fish keeping.
 
 ### My blog
-This is a serverless static website built on Amazon S3, secured with Amazon Certificate Manager and distributed with CloudFront fronted by Route53. It's built from CloudFormation available in my [github repo s3plus](https://github.com/TheRealBenForce/s3plus).
+This is a serverless static website built on Amazon S3, secured with Amazon Certificate Manager, distributed globally with CloudFront, fronted by Route53, version controlled in GitHub, and pipelines with AWS CodePipeline and CodeBuld. Sounds complicated but it's built from entirely from CloudFormation and available in my [github repo s3plus](https://github.com/TheRealBenForce/s3plus). All you have to do is make the blog!
 
-The blog framework is Jekyll using the [beautiful-jekyll theme](https://github.com/daattali/beautiful-jekyll).
+Currently my buildspec supports Jekyll. I'm using the [beautiful-jekyll theme](https://github.com/daattali/beautiful-jekyll).
 
 ### My crazy professional history
 I've had a pretty wild ride professionally since graduating college. Most people find it very interesting so this is my attempt to lay out the highlights.
