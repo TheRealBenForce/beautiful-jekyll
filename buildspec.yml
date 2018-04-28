@@ -4,15 +4,29 @@ version: 0.1
 phases:
   install:
     commands:
-      # Add / remove whatever jekyll plugins you use here
-      - echo "******** Installing gems ********"
-      - gem install bundler
-      - bundle install
+      - |
+        if test "$BUILD_STAGE" = 'STAGING'; then
+          echo "Installing gems with bundler"
+          bundle install
+        else
+          echo "Nothing to install. Moving to build stage"
+        fi
   build:
     commands:
-      - echo "******** Building site ********"
-      - ls
-      - bundle exec jekyll build
-      - echo "******** Updating your jekyll website at s3 bucket ********"
-      - echo "$TARGET_S3_BUCKET"
-      - aws s3 sync _site/ $TARGET_S3_BUCKET --exclude buildspec.yml
+      - echo "Build Stage $BUILD_STAGE start"
+      - |
+        if test "$BUILD_STAGE" = 'STAGING'; then
+          echo "Build site and pushing to $STAGING_S3_BUCKET"
+          bundle exec jekyll build
+          aws s3 sync _site/ $STAGING_S3_BUCKET --exclude buildspec.yml
+          BUILDMSG="Copy to staging complete."
+        elif test "$BUILD_STAGE" = 'PRODUCTION'; then
+          echo "Approval received"
+          aws s3 sync $STAGING_S3_BUCKET $PROD_S3_BUCKET --exclude buildspec.yml
+          aws s3 rm $STAGING_S3_BUCKET --recursive --exclude error.html
+          BUILDMSG="Copy to production complete"
+        else
+          echo "Unknown error."
+          BUILDMSG="Unknown error."
+        fi
+      - echo "Build Stage $BUILD_STAGE complete"
