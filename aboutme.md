@@ -32,5 +32,4 @@ See I told you, pretty wild!
 ### Certifications
 [AWS Certified Solutions Architect - Associate](https://www.certmetrics.com/amazon/public/badge.aspx?i=1&t=c&d=2017-07-11&ci=AWS00274761)  
 [ISC2 Certified Cloud Security Professional](https://www.youracclaim.com/badges/3b7a238c-20ad-460f-ac3f-0357afe780f0/public_url)
-
 [ITIL® Foundation Certificate in IT Service Management](https://candidate.peoplecert.org/ReportsLink.aspx?argType=1&id=F881D9EBC07184A5A4B5D6333A40F1DCE3B500AD81AC8032232798C77375CE0E73B394007E6FCA4E)
