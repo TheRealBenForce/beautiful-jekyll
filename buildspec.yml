@@ -1,4 +1,4 @@
-# This buildspec.yml can be built with aws/codebuild/ruby:2.3.1
+# This buildspec.yml is used to build a jekyll static site.
 version: 0.1
 
 phases:
@@ -18,15 +18,13 @@ phases:
         if test "$BUILD_STAGE" = 'STAGING'; then
           echo "Build site and pushing to $STAGING_S3_BUCKET"
           bundle exec jekyll build
-          aws s3 rm $STAGING_S3_BUCKET --recursive --exclude error.html
-          aws cloudfront create-invalidation --distribution-id $STAGING_DISTRIBUTION --paths /*
-          aws s3 sync _site/ $STAGING_S3_BUCKET --exclude buildspec.yml
+          aws s3 rm $STAGING_S3_BUCKET --recursive
+          aws s3 sync _site/ $STAGING_S3_BUCKET
           BUILDMSG="Copy to staging complete."
         elif test "$BUILD_STAGE" = 'PRODUCTION'; then
           echo "Approval received"
-          aws s3 sync $STAGING_S3_BUCKET $PROD_S3_BUCKET --exclude buildspec.yml
+          aws s3 sync $STAGING_S3_BUCKET $PROD_S3_BUCKET
           aws s3 rm $STAGING_S3_BUCKET --recursive --exclude error.html
-          aws cloudfront create-invalidation --distribution-id $STAGING_DISTRIBUTION --paths /*
           aws cloudfront create-invalidation --distribution-id $PROD_DISTRIBUTION --paths /*
           BUILDMSG="Copy to production complete"
         else
