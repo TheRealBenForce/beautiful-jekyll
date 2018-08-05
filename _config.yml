@@ -25,6 +25,9 @@ description: Serverless blogging at its finest.
 navbar-links:
   About Me: "aboutme"
   AWS Wish List: "aws-wish-list"
+  Projects:
+    - S3Plus: "https://github.com/TheRealBenForce/s3plus"
+    - CISSP Mnemonics: "https://github.com/TheRealBenForce/cissp-mnemonics"
   People:
     - Frank Force: "http://www.frankforce.com"
 
