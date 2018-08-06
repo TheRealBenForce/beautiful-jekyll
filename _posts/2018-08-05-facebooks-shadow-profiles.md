@@ -1,7 +1,7 @@
 ---
 layout: post
-title: A Look At Facebook's Shadow Profiles
-tags: [security, social networking, facebook]
+title: My Theory on Facebook's Shadow Profiles
+tags: [security, social networking, facebook, shadow profiles]
 ---
 
 I'm hot off the heals of passing the CISSP exam and felt inclined to post on a security related topic. Perhaps a bit dystopian in nature but given light of recent revelations regarding data collection from Cambridge Analytical by means of Facebook, I thought I'd write a bit about a theory I developed a few years back regarding collection of data for non-users of Facebook, AKA "shadow profiles". This theory came to me after reading about [facial recognition at massive scale](https://www.huffingtonpost.com/2014/03/18/facebook-deepface-facial-recognition_n_4985925.html) for the first time which happened to be on the Facebook platform.
