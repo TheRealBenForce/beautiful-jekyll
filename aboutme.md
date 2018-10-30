@@ -32,6 +32,8 @@ See I told you, pretty wild!
 ### Certifications
 [AWS Certified Solutions Architect - Associate](https://www.certmetrics.com/amazon/public/badge.aspx?i=1&t=c&d=2017-07-11&ci=AWS00274761)
 
+[AWS Certified SysOps - Associate](https://www.certmetrics.com/amazon/public/badge.aspx?i=3&t=c&d=2018-10-26&ci=AWS00274761)
+
 [ISC2 Certified Information Systems Security Professional - CISSP](https://www.youracclaim.com/badges/14c7a12f-e96e-4af2-8699-aba4d5b7affd/public_url)
 
 [ISC2 Certified Cloud Security Professional - CCSP](https://www.youracclaim.com/badges/3b7a238c-20ad-460f-ac3f-0357afe780f0/public_url)
